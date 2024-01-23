@@ -1,7 +1,12 @@
 FROM openjdk:11-jdk
 
-COPY target/sample-app.jar /app.jar
+WORKDIR /app
 
-EXPOSE 8080
+COPY HelloWorld.java .
 
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+RUN javac HelloWorld.java
+RUN jar cfe hello-world.jar HelloWorld HelloWorld.class
+
+EXPOSE 9080
+
+ENTRYPOINT ["java", "-cp", ".", "HelloWorld"]
