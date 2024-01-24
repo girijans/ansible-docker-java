@@ -39,3 +39,7 @@
           - "9999:9999"
         detach: true
 
+    - name: Print Hello world!
+      debug:
+        msg: Hello world!
+
