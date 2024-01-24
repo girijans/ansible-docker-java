@@ -4,9 +4,10 @@ pipeline {
         stage('build') {
             steps {
                 script {
-                    ansiblePlaybook(
-                        playbook: 'ansible-playbook.yaml'
-                    )
+                    ansiblePlaybook('ansible-playbook.yaml'){
+                            additionalParameters('-v')
+                    }
+        
                 }
             }
         }
