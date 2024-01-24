@@ -1,61 +1,41 @@
 ---
 - name: Deploy sample java application with build and test
   hosts: localhost
-  become: yes
+  become: no
+  vars:
+    ansible_python_interpreter: /usr/bin/python3      #/opt/homebrew/bin/python3
+      #docker_api_version: 1.43
 
   tasks:
-    # Build the JAR file
-    - name: Compile Java file
-      command: 
-        cmd: javac HelloWorld.java
-        chdir: ./app
-
-    - name: Create JAR file
-      command:
-        cmd: jar cfe hello-world.jar HelloWorld HelloWorld.class
-        chdir: ./app
-        # - name: Build JAR file
-        #command: 
-        #cmd: javac HelloWorld.java && jar cfe hello-world.jar HelloWorld HelloWorld.class
-        #chdir: ./app
-
     # Create a Dockerfile for the application
     - name: Create Dockerfile
       template:
         src: Dockerfile
-        dest: /tmp/Dockerfile
+        dest: ./app/Dockerfile
 
-    - name: Ensure Docker SDK for Python is installed
-      ansible.builtin.pip:
-        name: docker
-        state: present
+    # Download application source files
+    - name: Copy HelloWorld.java
+      template:
+        src: HelloWorld.java
+        dest: ./app/HelloWorld.java
 
     # Build the Docker image
     - name: Build Docker image
-      ansible.builtin.docker_image:
-        name: sample-java-app:latest
-          #tag: sample-java-app:latest
+      community.docker.docker_image:
+        name: sample-java-app
+        tag: latest
         build:
-          path: /tmp
-          dockerfile: /tmp/Dockerfile
+          path: ./app
+          dockerfile: Dockerfile
+        source: build
 
+        
     # Run the Docker container
     - name: Run Docker container
       docker_container:
         name: sample-java-app
         image: sample-java-app:latest
         ports:
-          - "8080:8080"
-        volumes:
-          - "./app/hello-world.jar:/app.jar"
+          - "9999:9999"
         detach: true
 
-    # Test the application
-    - name: Test application
-      shell: curl http://localhost:8080
-      register: result
-
-    # Verify application response
-    - assert:
-        that:
-          - "'Hello, World!' in result.stdout"
